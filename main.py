@@ -208,7 +208,9 @@ def launch_demo(args):
                             cv_interface.draw_headband(1.75)
                             #cv_interface.put_text(f"Class {classe} registered", 0.3)
                             #cv_interface.put_text(f"Number of shots : {cv_interface.get_number_snapshot(classe)}", 0.315, 2)
+                        k_reg = 0
                     cv_interface.put_text("images saved", 2)
+                    next_state = "idle"
                     # 10 (nb_features) following frames after pressing the button will be saved as features
 
                 ### INFERENCE ###
