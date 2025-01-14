@@ -132,6 +132,29 @@ def launch_demo(args):
         hdmi_out.start()
         new_frame = hdmi_out.newframe()
 
+
+    #registration
+    for classe in possible_input:
+        while k_reg < nb_features:
+            if k_reg == 0:
+                cv_interface.add_snapshot(int(classe) - 1, path2img + f'{classe}/1.jpg') # the first one will be saved for display
+            img = cv_interface.resize_for_backbone(args.resolution_input, path2img + f'{classe}/{k_reg + 1}.jpg')
+            img = preprocess(img)
+            T.tic()
+            features = backbone(img)
+            T.toc("BACKBONE")
+            current_data.add_repr(int(classe), features)
+
+            k_reg += 1
+            T.timer()
+
+            cv_interface.draw_headband(1.75)
+            #cv_interface.put_text(f"Class {classe} registered", 0.3)
+            #cv_interface.put_text(f"Number of shots : {cv_interface.get_number_snapshot(classe)}", 0.315, 2)
+        k_reg = 0
+    cv_interface.put_text("images saved", 2)
+    # 10 (nb_features) following frames after pressing the button will be saved as features
+
     ###############################
     ###------# MAIN LOOP #------###
     ###############################
@@ -188,30 +211,7 @@ def launch_demo(args):
                     cv_interface.draw_headband()
                     cv_interface.put_text("Initialization", 0.2)
 
-                ### REGISTRATION ###
                 #utilise below and change them
-                elif current_state == "registration":
-                    for classe in possible_input_pynq:
-                        while k_reg < nb_features:
-                            if k_reg == 0:
-                                cv_interface.add_snapshot(classe, path2img + f'{classe}/0.jpg') # the first one will be saved for display
-                            img = cv_interface.resize_for_backbone(args.resolution_input, path2img + f'{classe}/{k_reg}.jpg')
-                            img = preprocess(img)
-                            T.tic()
-                            features = backbone(img)
-                            T.toc("BACKBONE")
-                            current_data.add_repr(classe, features)
-
-                            k_reg += 1
-                            T.timer()
-
-                            cv_interface.draw_headband(1.75)
-                            #cv_interface.put_text(f"Class {classe} registered", 0.3)
-                            #cv_interface.put_text(f"Number of shots : {cv_interface.get_number_snapshot(classe)}", 0.315, 2)
-                        k_reg = 0
-                    cv_interface.put_text("images saved", 2)
-                    next_state = "idle"
-                    # 10 (nb_features) following frames after pressing the button will be saved as features
 
                 ### INFERENCE ###
                 elif current_state == "inference":
@@ -300,13 +300,9 @@ def launch_demo(args):
                 ##########################################
 
                 ### CLASSES REGISTRATION ###
-                #delete this "if" paragraph
-                if key == '0' and not (current_state=="initialization" or current_state=="inference" or current_state=="registration"):
-                    #classe = possible_input.index(key)
-                    next_state = "registration"
 
                 ### INFERENCE ###
-                elif key == "i" and current_data.is_data_recorded() and not (current_state=="inference"):
+                if key == "i" and current_data.is_data_recorded() and not (current_state=="inference"):
                     print("\n\n--- Beginning Inference ---")
                     T.saved_columns = T.columns.copy()
                     T.display = True

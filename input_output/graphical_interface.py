@@ -120,6 +120,7 @@ class OpencvInterface:
             return cv2.resize(self.frame, dsize=resolution_input, interpolation=cv2.INTER_LINEAR) 
         img = cv2.imread(path)
         return cv2.resize(img, dsize=resolution_input, interpolation=cv2.INTER_LINEAR)  # linear is faster than cubic
+
     
     def display_image(self, image, scale, position="ctr/ctr"):
         """
