@@ -118,7 +118,7 @@ class OpencvInterface:
         """
         if path == None:
             return cv2.resize(self.frame, dsize=resolution_input, interpolation=cv2.INTER_LINEAR) 
-        img = cv2.imread(path)[:, :, ::-1]
+        img = cv2.imread(path)
         return cv2.resize(img, dsize=resolution_input, interpolation=cv2.INTER_LINEAR)  # linear is faster than cubic
     
     def display_image(self, image, scale, position="ctr/ctr"):
@@ -264,7 +264,7 @@ class OpencvInterface:
         """
         add a snapshot to memmory
         """
-        img_to_add = cv2.imread(path)[:, :, ::-1]
+        img_to_add = cv2.imread(path)
         image_label = cv2.resize(img_to_add,(self.shot_width, self.shot_height),interpolation=cv2.INTER_AREA)
         self.snapshot[classe].append(image_label)
         print(f" Class {classe} registered. Number of shots : {self.get_number_snapshot(classe)}")
