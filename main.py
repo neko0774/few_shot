@@ -93,7 +93,7 @@ def launch_demo(args):
     nb_frame_init = 5
 
     #number of shots (imgs) for each class
-    nb_features = 5
+    nb_features = 3
 
     #path to img file dir
     path2img = "imgs/"
