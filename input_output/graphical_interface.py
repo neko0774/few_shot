@@ -96,8 +96,8 @@ class OpencvInterface:
         self.headband_height = int(Gscale*0.1*self.height)
         self.top_gap = int(0.67*self.headband_height)
         self.bloc_gap = int(Gscale*0.04*self.height)
-        self.shot_height = int(Gscale*0.2*self.height)
-        self.shot_width = int(Gscale*0.2*self.width)
+        self.shot_height = int(Gscale*0.1*self.height)
+        self.shot_width = int(Gscale*0.1*self.width)
         self.frame = np.zeros((self.height, self.width, 3), np.uint8)
         self.number_of_class = number_of_class
         self.snapshot = [[] for i in range(number_of_class)]
@@ -127,7 +127,101 @@ class OpencvInterface:
         wrapper of display_img
         """
         display_img(self.frame, image, scale, position)
+    
+    def draw_indicator_modified(self, probabilities):
+        """
+        Draw indicator : draw shots, probability and level bar for each class.
+        Supports multiple columns for cases with many classes.
+        """
+        if self.draw_interface:
+            ### PARAMETERS ###
+            # Shot frames
+            shot_width = self.shot_width
+            shot_height = self.shot_height
+            shot_shift = int(self.Gscale * 0.01 * self.width)
+            shot_gap = int(self.Gscale * 0.025 * self.height)
+            # Level bar
+            level_bar_width = int(0.02 * self.width)
+            level_bar_height = shot_height
+            # Percentage display
+            font_percentage_scale = self.font_scale
+            font_class_scale = 0.7 * font_percentage_scale
+            font_percentage_thickness = self.font_thickness
+            font_class_thickness = int(0.7 * font_percentage_thickness)
+            if self.font_thickness == 0:
+                font_percentage_thickness = 1
+                font_class_thickness = 1
 
+            ### DRAW SHOT WITH SHIFT ###
+            # Initial position of the first shot
+            x_start = self.bloc_gap + shot_gap
+            x_end = x_start + shot_width
+            y_start = self.headband_height + self.bloc_gap + shot_gap
+            y_end = y_start + shot_height
+            
+            shift = 0
+            shift_width = 10
+
+            for k in range(len(probabilities)):
+                images = self.snapshot[k]
+                if not images:
+                    self.ERROR = True
+                    self.empty_classe.append(str(k))
+                    continue
+
+                # Check if we need to move to a new column
+                if y_end >= self.height:
+                    y_start = self.headband_height + self.bloc_gap + shot_gap
+                    y_end = y_start + shot_height
+                    x_start = x_end + shift_width * shot_gap  # Move to the next column
+                    x_end = x_start + shot_width
+                    
+                    shift = shift + 1
+
+                    # Add this check to avoid exceeding frame width
+                    if x_end >= self.width:
+                        print("No space left to draw more images.")
+                        break
+
+                # Draw shots
+                for n_shot in range(len(images)):
+                    self.frame[y_start:y_end, x_start:x_end] = images[n_shot]
+                    x_start += shot_shift
+                    x_end += shot_shift
+                    y_start += shot_shift
+                    y_end += shot_shift
+
+                # Draw class label and shot count
+                cv2.putText(self.frame, f"class {k}", (x_start, y_end - shot_height + 2 * shot_shift),
+                            self.font, font_class_scale, (0, 0, 255), font_class_thickness, cv2.LINE_AA)
+                cv2.putText(self.frame, f"{n_shot + 1}", (x_end - 4 * shot_shift, y_end - shot_height + 2 * shot_shift),
+                            self.font, font_class_scale, (0, 0, 255), font_class_thickness, cv2.LINE_AA)
+
+                
+                # Reset shot positions for next drawings
+                x_start = x_end - shot_shift + shot_gap
+                y_start = y_end - shot_shift
+
+                # Draw level bar
+                level_max = int(probabilities[k] * level_bar_height)
+                for lvl in range(level_max):
+                    level_start = (x_start, y_start - lvl)
+                    level_end = (x_start + level_bar_width, y_start - (lvl + 1))
+                    cv2.rectangle(self.frame, level_start, level_end,
+                                percentage_to_color(lvl / level_bar_height), cv2.FILLED)
+
+                # Draw percentage
+                x_start = x_start + shot_gap + level_bar_width
+                percentage_origin = (x_start, y_start)
+                cv2.putText(self.frame, f"{int(np.round(100 * probabilities[k].item()))}%", percentage_origin,
+                            self.font, font_percentage_scale, (0, 0, 255), font_percentage_thickness, cv2.LINE_AA)
+
+                # Update position for the next class
+                #x_start = self.bloc_gap + shot_gap
+                x_start = self.bloc_gap + (shift_width * shift + 1) * shot_gap + shift * shot_width
+                x_end = x_start + shot_width
+                y_start = y_start + shot_gap
+                y_end = y_start + shot_height
 
     def draw_indicator(self, probabilities):
         """

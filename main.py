@@ -71,7 +71,8 @@ def launch_demo(args):
     probas = None
 
     # Possible classes
-    possible_input_keyboard = [chr(i+49) for i in range(4)] # maximum 4 class (you can replace the 4 by any positiv integer to increase nb_class_max)
+    #下の部分の数をそろえる
+    possible_input_keyboard = [chr(i+49) for i in range(5)] # maximum 4 class (you can replace the 4 by any positiv integer to increase nb_class_max)
     possible_input_pynq = ["1", "2", "3", "4", "5"] #huyasitemiru
     nb_class_max = 0
     registered_class = None
@@ -232,7 +233,7 @@ def launch_demo(args):
                     T.tic()
                     cv_interface.put_text(f"Object is from class : {classe_prediction}", 0.38)
                     T.toc("TEXT")
-                    cv_interface.draw_indicator(probas)
+                    cv_interface.draw_indicator_modified(probas)
                     T.toc("INDICATORS")
                     T.timer() # display all timers on the terminal
                     if cv_interface.ERROR:
