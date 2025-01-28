@@ -2,7 +2,6 @@
 DEMO of few shot learning:
     connect to the camera and prints prediction in an interface
     press :
-    1, 2, 3... : the program will register the current image as an instance of the given class
     i : will start inference
     q : quit the program
     p : pause the program
@@ -226,7 +225,7 @@ def launch_demo(args):
                     T.toc("PREDI")
                     k = 0
                     for index in registered_class: # reorganize probabilities
-                        probas[index] = probabilities[0,k]
+                        probas[index] = probabilities[0][0,k]
                         k += 1
                     # headband, text and indicator
                     cv_interface.draw_headband()
@@ -260,7 +259,7 @@ def launch_demo(args):
                 ### RESET ###
                 elif current_state == "reset":
                     # reset states and values
-                    current_data.reset()
+                    #current_data.reset()
                     cv_interface.reset_snapshot()
                     T.reset()
                     if args.button == "pynq" or args.button == "keyboard-pynq":
